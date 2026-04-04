@@ -1,4 +1,4 @@
-package com.example.kafkabasic;
+package com.example.stocksaga;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +28,7 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     @Bean
-    public ProducerFactory<String, OrderEvent> producerFactory() {
+    public ProducerFactory<String, SagaEvent> producerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -37,26 +37,26 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderEvent> kafkaTemplate() {
+    public KafkaTemplate<String, SagaEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, OrderEvent> consumerFactory() {
+    public ConsumerFactory<String, SagaEvent> consumerFactory() {
         Map<String, Object> config = new HashMap<>();
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "order-demo-group");
+        config.put(ConsumerConfig.GROUP_ID_CONFIG, "stock-service-group");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "com.example.kafkabasic");
-        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, OrderEvent.class.getName());
+        config.put(JsonDeserializer.TRUSTED_PACKAGES, "com.example.stocksaga");
+        config.put(JsonDeserializer.VALUE_DEFAULT_TYPE, SagaEvent.class.getName());
         config.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         return new DefaultKafkaConsumerFactory<>(config);
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, OrderEvent> factory =
+    public ConcurrentKafkaListenerContainerFactory<String, SagaEvent> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, SagaEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;

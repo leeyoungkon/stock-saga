@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Saga Dashboard</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --card: #fffaf2;
+      --ink: #2c2721;
+      --accent: #0a7d64;
+      --accent-2: #db6c3d;
+      --muted: #6e6559;
+      --line: #e4d8c8;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 20%, #fce8cf 0%, transparent 35%),
+        radial-gradient(circle at 80% 0%, #d5efe9 0%, transparent 30%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .hero {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 16px;
+      animation: rise .5s ease;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: .02em;
+    }
+
+    .hero p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 900px) {
+      .grid { grid-template-columns: 1.1fr 1fr; }
+      .events { grid-column: span 2; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 6px 20px rgba(40, 30, 15, .07);
+      animation: rise .6s ease;
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: .05em;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 640px) {
+      .form-row { grid-template-columns: 1fr 1fr auto; }
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: linear-gradient(120deg, var(--accent), #23997f);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .ok { background: var(--accent); }
+    .fail { background: var(--accent-2); }
+    .info { background: #607d8b; }
+
+    .hint {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @keyframes rise {
+      from { transform: translateY(8px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <div>
+      <h1>Stock Saga Dashboard</h1>
+      <p>재고와 Saga 이벤트 상태를 실시간으로 확인합니다.</p>
+    </div>
+    <button id="refreshBtn" type="button">새로고침</button>
+  </section>
+
+  <section class="grid">
+    <article class="card">
+      <h2>재고 현황</h2>
+      <div class="meta">
+        <span id="stockCount">상품 수: 0</span>
+        <span id="lastStockAt">-</span>
+      </div>
+      <table>
+        <thead>
+        <tr>
+          <th>상품ID</th>
+          <th>수량</th>
+          <th>업데이트</th>
+        </tr>
+        </thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </article>
+
+    <article class="card">
+      <h2>재고 수량 등록/수정</h2>
+      <form id="inventoryForm">
+        <div class="form-row">
+          <label>
+            <input id="productId" placeholder="상품ID (예: P300)" required>
+          </label>
+          <label>
+            <input id="quantity" type="number" min="0" placeholder="수량" required>
+          </label>
+          <button type="submit">저장</button>
+        </div>
+      </form>
+      <p class="hint">주문(OrderCreated) 이벤트가 오면 해당 상품 재고가 자동 차감됩니다.</p>
+    </article>
+
+    <article class="card events">
+      <h2>이벤트 상태 로그 (최신 200건)</h2>
+      <div class="meta">
+        <span id="eventCount">로그 수: 0</span>
+        <span id="lastEventAt">-</span>
+      </div>
+      <table>
+        <thead>
+        <tr>
+          <th>시각</th>
+          <th>이벤트</th>
+          <th>주문ID</th>
+          <th>상품ID</th>
+          <th>수량</th>
+          <th>사유</th>
+        </tr>
+        </thead>
+        <tbody id="eventsBody"></tbody>
+      </table>
+    </article>
+  </section>
+</div>
+
+<script>
+  const inventoryBody = document.getElementById("inventoryBody");
+  const eventsBody = document.getElementById("eventsBody");
+
+  const stockCount = document.getElementById("stockCount");
+  const eventCount = document.getElementById("eventCount");
+  const lastStockAt = document.getElementById("lastStockAt");
+  const lastEventAt = document.getElementById("lastEventAt");
+
+  function toText(v) {
+    if (v === null || v === undefined || v === "") return "-";
+    return v;
+  }
+
+  function badgeClass(type) {
+    if (type === "StockReserved") return "ok";
+    if (type === "StockFailed") return "fail";
+    return "info";
+  }
+
+  async function loadInventory() {
+    const response = await fetch("/api/inventory");
+    const data = await response.json();
+
+    inventoryBody.innerHTML = data.map(item => `
+      <tr>
+        <td>${toText(item.productId)}</td>
+        <td>${toText(item.quantity)}</td>
+        <td>${toText(item.updatedAt)}</td>
+      </tr>
+    `).join("");
+
+    stockCount.textContent = `상품 수: ${data.length}`;
+    lastStockAt.textContent = data.length ? `마지막 변경: ${toText(data[0].updatedAt)}` : "마지막 변경: -";
+  }
+
+  async function loadEvents() {
+    const response = await fetch("/api/events");
+    const data = await response.json();
+
+    eventsBody.innerHTML = data.map(item => `
+      <tr>
+        <td>${toText(item.createdAt)}</td>
+        <td><span class="badge ${badgeClass(item.eventType)}">${toText(item.eventType)}</span></td>
+        <td>${toText(item.orderId)}</td>
+        <td>${toText(item.productId)}</td>
+        <td>${toText(item.quantity)}</td>
+        <td>${toText(item.reason)}</td>
+      </tr>
+    `).join("");
+
+    eventCount.textContent = `로그 수: ${data.length}`;
+    lastEventAt.textContent = data.length ? `최신 이벤트: ${toText(data[0].createdAt)}` : "최신 이벤트: -";
+  }
+
+  async function refreshAll() {
+    await Promise.all([loadInventory(), loadEvents()]);
+  }
+
+  document.getElementById("inventoryForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const productId = document.getElementById("productId").value.trim();
+    const quantity = Number(document.getElementById("quantity").value);
+
+    if (!productId || quantity < 0) {
+      alert("상품ID와 0 이상 수량을 입력하세요.");
+      return;
+    }
+
+    const response = await fetch(`/api/inventory/${encodeURIComponent(productId)}`, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({quantity})
+    });
+
+    if (!response.ok) {
+      alert("저장 실패");
+      return;
+    }
+
+    await refreshAll();
+  });
+
+  document.getElementById("refreshBtn").addEventListener("click", refreshAll);
+
+  refreshAll();
+  setInterval(refreshAll, 5000);
+</script>
+</body>
+</html>
