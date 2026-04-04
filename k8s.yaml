@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kafkabasic
+  name: payment-saga
   namespace: kafka
   labels:
-    app: kafkabasic
+    app: payment-saga
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kafkabasic
+      app: payment-saga
   template:
     metadata:
       labels:
-        app: kafkabasic
+        app: payment-saga
     spec:
       containers:
-        - name: kafkabasic
-          image: yklee2002/kafkabasic:latest
+        - name: payment-saga
+          image: yklee2002/payment-saga:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -28,16 +28,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafkabasic-service
+  name: payment-saga-service
   namespace: kafka
   labels:
-    app: kafkabasic
+    app: payment-saga
 spec:
   type: NodePort
   selector:
-    app: kafkabasic
+    app: payment-saga
   ports:
     - name: http
       port: 8080
       targetPort: 8080
-      nodePort: 30080
+      nodePort: 30303

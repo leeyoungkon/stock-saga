@@ -1,13 +1,13 @@
-package com.example.kafkabasic;
+package com.example.paymentsaga;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class KafkabasicApplication {
+public class PaymentSagaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(KafkabasicApplication.class, args);
+		SpringApplication.run(PaymentSagaApplication.class, args);
 	}
 
 }
