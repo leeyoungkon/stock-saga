@@ -31,6 +31,13 @@ public class StockController {
         return inventoryService.currentStockItems();
     }
 
+    @GetMapping("/inventory/{productId}")
+    public QuantityResponse getQuantity(@PathVariable String productId) {
+        InventoryItem item = inventoryService.getInventoryItem(productId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "inventory not found: " + productId));
+        return new QuantityResponse(item.getProductId(), item.getQuantity());
+    }
+
     @PostMapping("/inventory/{productId}")
     public InventoryItem upsert(@PathVariable String productId, @RequestBody InventoryUpdateRequest request) {
         if (request.quantity() < 0) {
@@ -42,6 +49,9 @@ public class StockController {
     @GetMapping("/events")
     public List<SagaEventLog> events() {
         return sagaEventLogRepository.findTop200ByOrderByCreatedAtDesc();
+    }
+
+    public record QuantityResponse(String productId, int quantity) {
     }
 
     public record InventoryUpdateRequest(int quantity) {

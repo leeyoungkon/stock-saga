@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -70,6 +71,11 @@ public class InventoryService {
     @Transactional(readOnly = true)
     public List<InventoryItem> currentStockItems() {
         return inventoryRepository.findAllByOrderByProductIdAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<InventoryItem> getInventoryItem(String productId) {
+        return inventoryRepository.findById(productId);
     }
 
     private void initializeIfMissing(String productId, int quantity) {
