@@ -61,6 +61,7 @@ public class StockSagaConsumer {
                         event.getAmount(),
                         null
                 );
+                stockProducer.publish(result);
                 saveEvent(result);
             }
         }
