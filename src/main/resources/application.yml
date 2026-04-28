@@ -4,7 +4,7 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://mysql.default.svc.cluster.local:3306/orderdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    url: jdbc:mysql://mysql.default.svc.cluster.local:3306/stockdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     username: ${SPRING_DATASOURCE_USERNAME:root}
     password: ${SPRING_DATASOURCE_PASSWORD:root1234}
   jpa:
