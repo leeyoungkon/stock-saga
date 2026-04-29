@@ -7,4 +7,6 @@ import java.util.List;
 public interface SagaEventLogRepository extends JpaRepository<SagaEventLog, Long> {
 
     List<SagaEventLog> findTop200ByOrderByCreatedAtDesc();
+
+    boolean existsByEventTypeAndOrderId(String eventType, String orderId);
 }

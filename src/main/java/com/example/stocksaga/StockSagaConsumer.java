@@ -21,6 +21,13 @@ public class StockSagaConsumer {
     @KafkaListener(topics = "order-events", groupId = "stock-service-group")
     public void consumeOrderEvent(SagaEvent event) {
         log.info("[STOCK] order event received = {}", event);
+
+        if (isDuplicateIncomingEvent(event)) {
+            log.warn("[STOCK] duplicate order event ignored. eventType={}, orderId={}",
+                    event.getEventType(), event.getOrderId());
+            return;
+        }
+
         saveEvent(event);
 
         switch (event.getEventType()) {
@@ -69,5 +76,12 @@ public class StockSagaConsumer {
 
     private void saveEvent(SagaEvent event) {
         sagaEventLogRepository.save(SagaEventLog.from(event));
+    }
+
+    private boolean isDuplicateIncomingEvent(SagaEvent event) {
+        if (event == null || event.getEventType() == null || event.getOrderId() == null) {
+            return false;
+        }
+        return sagaEventLogRepository.existsByEventTypeAndOrderId(event.getEventType(), event.getOrderId());
     }
 }
