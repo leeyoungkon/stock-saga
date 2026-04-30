@@ -51,47 +51,4 @@ spec:
       port: 8080
       targetPort: 8080
       nodePort: 30302
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: payment-saga
-  namespace: kafka
-  labels:
-    app: payment-saga
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: payment-saga
-  template:
-    metadata:
-      labels:
-        app: payment-saga
-    spec:
-      containers:
-        - name: payment-saga
-          image: yklee2002/payment-saga:latest
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 8080
-          env:
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: my-cluster-kafka-bootstrap.kafka:9092
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: payment-saga-service
-  namespace: kafka
-  labels:
-    app: payment-saga
-spec:
-  type: NodePort
-  selector:
-    app: payment-saga
-  ports:
-    - name: http
-      port: 8080
-      targetPort: 8080
-      nodePort: 30303
+
